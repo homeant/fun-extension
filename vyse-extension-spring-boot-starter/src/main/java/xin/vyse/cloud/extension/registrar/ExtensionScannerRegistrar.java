@@ -20,11 +20,12 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import xin.vyse.cloud.extension.IExtensionPoint;
 import xin.vyse.cloud.extension.annotation.EnableExtension;
-import xin.vyse.cloud.extension.annotation.Extension;
+import xin.vyse.cloud.extension.annotation.ExtensionService;
 import xin.vyse.cloud.extension.annotation.ExtensionPoint;
 import xin.vyse.cloud.extension.domain.ExtensionObject;
 import xin.vyse.cloud.extension.domain.ExtensionPointObject;
 import xin.vyse.cloud.extension.exception.ExtensionException;
+import xin.vyse.cloud.extension.factory.ExtensionFactoryBean;
 import xin.vyse.cloud.extension.repository.ExtensionRepository;
 
 import java.lang.annotation.Annotation;
@@ -33,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 扩展点注册扫描
+ *
  * @author vyse.guaika
  */
 @Slf4j
@@ -63,11 +65,11 @@ public class ExtensionScannerRegistrar implements ImportBeanDefinitionRegistrar,
                 if (candidateComponent instanceof AnnotatedBeanDefinition) {
                     AnnotatedBeanDefinition beanDefinition = (AnnotatedBeanDefinition) candidateComponent;
                     AnnotationMetadata annotationMetadata = beanDefinition.getMetadata();
-                    this.repository(annotationMetadata);
+                    this.repository(annotationMetadata, registry);
                 }
             }
         }
-        log.info("repository:{}",this.repository);
+        log.info("repository:{}", this.repository);
         BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(ExtensionRepository.class);
         GenericBeanDefinition definition = (GenericBeanDefinition) builder.getRawBeanDefinition();
         definition.getPropertyValues().add("repository", this.repository);
@@ -77,7 +79,7 @@ public class ExtensionScannerRegistrar implements ImportBeanDefinitionRegistrar,
         registry.registerBeanDefinition(beanId, definition);
     }
 
-    private void repository(AnnotationMetadata annotationMetadata) {
+    private void repository(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
         try {
             String className = annotationMetadata.getClassName();
             Class<?> beanClazz = Class.forName(className);
@@ -87,17 +89,17 @@ public class ExtensionScannerRegistrar implements ImportBeanDefinitionRegistrar,
                 pointObject.setTarget((Class<IExtensionPoint>) beanClazz);
                 pointObject.setName(extensionPoint.name());
                 pointObject.setDesc(extensionPoint.desc());
-                this.repositoryExtension(pointObject);
+                this.repositoryExtension(pointObject, registry);
             }
         } catch (ClassNotFoundException e) {
             throw new ExtensionException(e);
         }
     }
 
-    private void repositoryExtension(ExtensionPointObject extensionPoint) {
+    private void repositoryExtension(ExtensionPointObject extensionPoint, BeanDefinitionRegistry registry) {
         ClassPathScanningCandidateComponentProvider scanner = getImplScanner();
         scanner.setResourceLoader(this.resourceLoader);
-        AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(Extension.class);
+        AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(ExtensionService.class);
         scanner.addIncludeFilter(annotationTypeFilter);
         for (String basePackage : basePackages) {
             Set<BeanDefinition> candidateComponents = scanner
@@ -109,13 +111,22 @@ public class ExtensionScannerRegistrar implements ImportBeanDefinitionRegistrar,
                     try {
                         String className = annotationMetadata.getClassName();
                         Class<?> beanClazz = Class.forName(className);
-                        Extension extension = beanClazz.getAnnotation(Extension.class);
-                        if (extension != null) {
+                        ExtensionService extensionService = beanClazz.getAnnotation(ExtensionService.class);
+                        if (extensionService != null) {
                             ExtensionObject extensionObject = new ExtensionObject();
                             extensionObject.setTarget((Class<IExtensionPoint>) beanClazz);
-                            extensionObject.setBizCode(extension.bizCode());
-                            extensionObject.setName(extension.name());
-                            extensionObject.setDesc(extension.desc());
+                            extensionObject.setBizCode(extensionService.bizCode());
+                            extensionObject.setName(extensionService.name());
+                            extensionObject.setDesc(extensionService.desc());
+
+                            // 注入bean
+                            BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(ExtensionRepository.class);
+                            GenericBeanDefinition definition = (GenericBeanDefinition) builder.getRawBeanDefinition();
+                            definition.getPropertyValues().add("targetClass", beanClazz);
+                            definition.setBeanClass(ExtensionFactoryBean.class);
+                            definition.setAutowireMode(GenericBeanDefinition.AUTOWIRE_BY_TYPE);
+                            String beanId = StringUtils.uncapitalize(beanClazz.getSimpleName());
+                            registry.registerBeanDefinition(beanId, definition);
                             this.put(extensionPoint, extensionObject);
                         }
                     } catch (ClassNotFoundException e) {
@@ -222,7 +233,7 @@ public class ExtensionScannerRegistrar implements ImportBeanDefinitionRegistrar,
     public void put(ExtensionPointObject extensionPointObject, List<ExtensionObject> extensionObjectList) {
         if (this.repository.containsKey(extensionPointObject)) {
             List<ExtensionObject> extensionObjects = repository.get(extensionPointObject);
-            if (extensionObjects !=null && !extensionObjects.isEmpty()) {
+            if (extensionObjects != null && !extensionObjects.isEmpty()) {
                 extensionObjects.addAll(extensionObjectList);
             } else {
                 repository.put(extensionPointObject, extensionObjectList);

@@ -2,6 +2,8 @@ package xin.vyse.cloud.extension;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import xin.vyse.cloud.extension.annotation.ExtensionPoint;
 import xin.vyse.cloud.extension.domain.Context;
 import xin.vyse.cloud.extension.domain.ExtensionObject;
@@ -18,10 +20,12 @@ import java.util.function.Function;
  *
  * @author vyse.guaika
  */
-public class ExtensionExecutor {
+public class ExtensionExecutor implements ApplicationContextAware {
 
     @Autowired
     private ExtensionRepository extensionRepository;
+
+    private ApplicationContext applicationContext;
 
 
     public <R, C> R execute(Class<C> target, Context context, Function<C, R> exeFunction) {
@@ -39,10 +43,15 @@ public class ExtensionExecutor {
             extensionPointObject.setDesc(annotation.desc());
             extensionPointObject.setTarget((Class<IExtensionPoint>) target);
             List<ExtensionObject> extensionObjects = extensionRepository.extensions(extensionPointObject);
-            return (C) extensionObjects.stream().filter(extensionObject -> Objects.equals(extensionObject.getBizCode(), context.getBizCode())).findFirst().orElseThrow(() -> new ExtensionException(context.getBizCode(), "not find"));
+            return (C) extensionObjects.stream().filter(extensionObject -> Objects.equals(extensionObject.getBizCode(), context.getBizCode()))
+                    .findFirst().map(bean -> applicationContext.getBean(bean.getTarget()))
+                    .orElseThrow(() -> new ExtensionException(context.getBizCode(), "not find"));
         }
         throw new ExtensionException("not find class of " + target.getCanonicalName());
     }
 
-
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 }

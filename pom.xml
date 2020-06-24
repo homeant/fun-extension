@@ -20,7 +20,7 @@
 
         <java.version>1.8</java.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
-
+        <cglib.version>3.3.0</cglib.version>
         <testng.version>7.0.0</testng.version>
 
         <!-- 编译时的编码 -->
@@ -45,6 +45,11 @@
                 <artifactId>testng</artifactId>
                 <version>${testng.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>cglib</groupId>
+                <artifactId>cglib</artifactId>
+                <version>${cglib.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

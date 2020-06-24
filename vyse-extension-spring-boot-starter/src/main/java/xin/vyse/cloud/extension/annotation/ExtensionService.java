@@ -11,12 +11,12 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Component
-public @interface Extension {
-    @AliasFor(annotation = Component.class)
+public @interface ExtensionService {
+    @AliasFor("name")
     String value() default "";
 
-    String name();
+    @AliasFor("value")
+    String name() default "";
 
     /**
      * 业务key
@@ -25,5 +25,5 @@ public @interface Extension {
      */
     String bizCode();
 
-    String desc();
+    String desc() default "";
 }
