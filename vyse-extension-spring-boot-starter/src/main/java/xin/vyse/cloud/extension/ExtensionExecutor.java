@@ -45,7 +45,7 @@ public class ExtensionExecutor implements ApplicationContextAware {
             List<ExtensionObject> extensionObjects = extensionRepository.extensions(extensionPointObject);
             return (C) extensionObjects.stream().filter(extensionObject -> Objects.equals(extensionObject.getBizCode(), context.getBizCode()))
                     .findFirst().map(bean -> applicationContext.getBean(bean.getTarget()))
-                    .orElseThrow(() -> new ExtensionException(context.getBizCode(), "not find"));
+                    .orElseThrow(() -> new ExtensionException(context.getBizCode(), "not find of " + target.getSimpleName()));
         }
         throw new ExtensionException("not find class of " + target.getCanonicalName());
     }

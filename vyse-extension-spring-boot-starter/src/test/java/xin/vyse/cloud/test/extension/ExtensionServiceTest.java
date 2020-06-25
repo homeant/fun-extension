@@ -27,6 +27,6 @@ public class ExtensionServiceTest extends ApplicationTest {
 
     @Test
     public void test2(){
-        log.info("service:{}",helloService);
+        log.info("service:{}", helloService);
     }
 }
