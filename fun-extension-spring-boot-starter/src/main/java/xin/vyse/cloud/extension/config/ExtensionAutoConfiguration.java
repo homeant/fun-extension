@@ -3,7 +3,8 @@ package xin.vyse.cloud.extension.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import xin.vyse.cloud.extension.ExtensionExecutor;
-import xin.vyse.cloud.extension.registrar.ExtensionScannerRegistrar;
+import xin.vyse.cloud.extension.registrar.ExtensionRegistrar;
+import xin.vyse.cloud.extension.repository.ExtensionRepository;
 
 /**
  * 扩展类配置
@@ -18,7 +19,7 @@ public class ExtensionAutoConfiguration {
     }
 
     @Bean
-    public ExtensionScannerRegistrar extensionScannerRegistrar(){
-        return new ExtensionScannerRegistrar();
+    public ExtensionRepository extensionRepository(){
+        return new ExtensionRepository();
     }
 }

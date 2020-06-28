@@ -13,6 +13,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ExtensionPoint {
+
     @AliasFor("name")
     String value() default "";
 
