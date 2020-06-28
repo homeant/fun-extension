@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import xin.vyse.cloud.extension.domain.ExtensionObject;
 import xin.vyse.cloud.extension.domain.ExtensionPointObject;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +25,6 @@ public class ExtensionRepository {
         this.repository = repository;
     }
 
-    public List<ExtensionPointObject> extensionPoints() {
-        List<ExtensionPointObject> extensionPointObjectList = new ArrayList<>();
-        repository.forEach((k, v) -> {
-            k.setExtensionObjectList(v);
-            extensionPointObjectList.add(k);
-        });
-        return extensionPointObjectList;
-    }
 
     public List<ExtensionObject> extensions(ExtensionPointObject extensionPointObject) {
         List<ExtensionObject> extensionObjects = repository.get(extensionPointObject);

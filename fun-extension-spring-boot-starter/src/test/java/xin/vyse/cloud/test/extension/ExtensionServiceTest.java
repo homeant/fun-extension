@@ -19,8 +19,7 @@ public class ExtensionServiceTest extends ApplicationTest {
 
     @Test
     public void test() {
-        Context context = new Context();
-        context.setBizCode("xin.vyse.cloud.hello");
+        Context context = Context.create("xin.vyse.cloud.hello");
         String result = extensionExecutor.execute(HelloService.class, context, helloService -> helloService.hello("tom"));
         log.info("result:{}",result);
     }
