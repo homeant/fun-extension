@@ -29,4 +29,9 @@ public class ExtensionServiceFactoryBean<T> implements FactoryBean<T>, Applicati
     public Class<?> getObjectType() {
         return type;
     }
+
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
 }
