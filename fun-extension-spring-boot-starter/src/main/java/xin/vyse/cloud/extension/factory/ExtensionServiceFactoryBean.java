@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import xin.vyse.cloud.extension.proxy.ExtensionProxy;
 import xin.vyse.cloud.extension.proxy.ExtensionSpringProxy;
 
 /**

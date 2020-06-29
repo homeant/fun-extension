@@ -23,8 +23,6 @@ import org.springframework.util.ClassUtils;
 import xin.vyse.cloud.extension.annotation.EnableExtension;
 import xin.vyse.cloud.extension.annotation.ExtensionPoint;
 import xin.vyse.cloud.extension.annotation.ExtensionService;
-import xin.vyse.cloud.extension.domain.ExtensionObject;
-import xin.vyse.cloud.extension.domain.ExtensionPointObject;
 import xin.vyse.cloud.extension.factory.ExtensionServiceFactoryBean;
 
 import java.util.HashSet;
@@ -45,8 +43,6 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
     private Environment environment;
 
     private ResourceLoader resourceLoader;
-
-    private Map<ExtensionPointObject, List<ExtensionObject>> repository = new ConcurrentHashMap<>();
 
 
     @Override
@@ -72,7 +68,7 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
                         if (serviceCandidateComponent instanceof AnnotatedBeanDefinition) {
                             AnnotationMetadata serviceAnnotationMetadata = ((AnnotatedBeanDefinition) serviceCandidateComponent).getMetadata();
                             Map<String, Object> serviceAttributes = serviceAnnotationMetadata.getAnnotationAttributes(ExtensionService.class.getCanonicalName());
-                            this.repositoryExtension(registry, serviceAnnotationMetadata, serviceAttributes);
+                            this.repositoryExtensionService(registry, serviceAnnotationMetadata, serviceAttributes);
                         }
                     }
                 }
@@ -87,7 +83,7 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
      * @param annotationMetadata
      * @param attributes
      */
-    private void repositoryExtension(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata, Map<String, Object> attributes) {
+    private void repositoryExtensionService(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata, Map<String, Object> attributes) {
         String className = annotationMetadata.getClassName();
         BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(ExtensionServiceFactoryBean.class);
         String name = this.getName(attributes);

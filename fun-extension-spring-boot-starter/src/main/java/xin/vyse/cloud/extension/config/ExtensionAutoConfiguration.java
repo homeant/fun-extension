@@ -3,7 +3,6 @@ package xin.vyse.cloud.extension.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import xin.vyse.cloud.extension.ExtensionExecutor;
-import xin.vyse.cloud.extension.registrar.ExtensionRegistrar;
 import xin.vyse.cloud.extension.repository.ExtensionRepository;
 
 /**
