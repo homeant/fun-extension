@@ -67,13 +67,10 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
                     this.repositoryExtensionPoint(registry, annotationMetadata, attributes);
                     ClassPathScanningCandidateComponentProvider serviceScanner = getScanner();
                     serviceScanner.setResourceLoader(this.resourceLoader);
-                    AnnotationTypeFilter serviceAnnotationTypeFilter = new AnnotationTypeFilter(ExtensionService.class);
-                    serviceScanner.addIncludeFilter(serviceAnnotationTypeFilter);
-                    Set<BeanDefinition> serviceCandidateComponents = serviceScanner.findCandidateComponents(basePackage);
-                    for (BeanDefinition serviceCandidateComponent : serviceCandidateComponents) {
+                    serviceScanner.addIncludeFilter(new AnnotationTypeFilter(ExtensionService.class));
+                    for (BeanDefinition serviceCandidateComponent : serviceScanner.findCandidateComponents(basePackage)) {
                         if (serviceCandidateComponent instanceof AnnotatedBeanDefinition) {
-                            AnnotatedBeanDefinition serviceBeanDefinition = (AnnotatedBeanDefinition) serviceCandidateComponent;
-                            AnnotationMetadata serviceAnnotationMetadata = serviceBeanDefinition.getMetadata();
+                            AnnotationMetadata serviceAnnotationMetadata = ((AnnotatedBeanDefinition) serviceCandidateComponent).getMetadata();
                             Map<String, Object> serviceAttributes = serviceAnnotationMetadata.getAnnotationAttributes(ExtensionService.class.getCanonicalName());
                             this.repositoryExtension(registry, serviceAnnotationMetadata, serviceAttributes);
                         }
@@ -148,6 +145,10 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
         return basePackages;
     }
 
+    /**
+     * 扫描器
+     * @return
+     */
     protected ClassPathScanningCandidateComponentProvider getScanner() {
 
         return new ClassPathScanningCandidateComponentProvider(false, this.environment) {

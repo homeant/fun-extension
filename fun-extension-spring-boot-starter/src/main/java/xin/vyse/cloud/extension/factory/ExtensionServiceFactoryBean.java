@@ -4,8 +4,13 @@ import lombok.Data;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import xin.vyse.cloud.extension.repository.ExtensionRepository;
+import xin.vyse.cloud.extension.proxy.ExtensionSpringProxy;
 
+/**
+ * 扩展点工厂
+ *
+ * @author xiaobang_1118
+ */
 @Data
 public class ExtensionServiceFactoryBean<T> implements FactoryBean<T>, ApplicationContextAware {
 
@@ -17,8 +22,7 @@ public class ExtensionServiceFactoryBean<T> implements FactoryBean<T>, Applicati
 
     @Override
     public T getObject() throws Exception {
-        ExtensionRepository repository = this.applicationContext.getBean(ExtensionRepository.class);
-        return null;
+        return (T) new ExtensionSpringProxy().getInstance(type);
     }
 
     @Override
