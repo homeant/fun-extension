@@ -20,9 +20,11 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 import xin.vyse.cloud.extension.annotation.EnableExtension;
 import xin.vyse.cloud.extension.annotation.ExtensionPoint;
 import xin.vyse.cloud.extension.annotation.ExtensionService;
+import xin.vyse.cloud.extension.exception.ExtensionException;
 import xin.vyse.cloud.extension.factory.ExtensionServiceFactoryBean;
 
 import java.util.HashSet;
@@ -87,14 +89,14 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
         String className = annotationMetadata.getClassName();
         BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(ExtensionServiceFactoryBean.class);
         String name = this.getName(attributes);
-        String alias = this.getAlias(attributes);
+        String alias = this.getAlias(attributes, className);
         definition.addPropertyValue("name", name);
         definition.addPropertyValue("type", className);
+        definition.addPropertyValue("bizCode", this.getBizCode(attributes));
+        definition.addPropertyValue("tenant", this.getTenant(attributes));
         definition.setAutowireMode(2);
         AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
         beanDefinition.setAttribute("factoryBeanObjectType", className);
-//        boolean primary = (Boolean) attributes.get("primary");
-//        beanDefinition.setPrimary(primary);
         BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, className, new String[]{alias});
         BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
     }
@@ -103,8 +105,21 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
         return (String) attributes.get("name");
     }
 
-    private String getAlias(Map<String, Object> attributes) {
-        return (String) attributes.get("name");
+    private String[] getBizCode(Map<String, Object> attributes) {
+        return (String[]) attributes.get("bizCode");
+    }
+
+    private String getTenant(Map<String, Object> attributes) {
+        return (String) attributes.get("tenant");
+    }
+
+    private String getAlias(Map<String, Object> attributes, String className) {
+        String value = (String) attributes.get("value");
+        if (!StringUtils.hasText(value)) {
+            value = className.substring(className.lastIndexOf(".") + 1);
+            return value.substring(0, 1).toLowerCase() + value.substring(1);
+        }
+        return value;
     }
 
     /**
@@ -143,6 +158,7 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
 
     /**
      * 扫描器
+     *
      * @return
      */
     protected ClassPathScanningCandidateComponentProvider getScanner() {

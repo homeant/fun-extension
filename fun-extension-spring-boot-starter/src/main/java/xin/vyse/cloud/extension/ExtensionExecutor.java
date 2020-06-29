@@ -32,19 +32,22 @@ public class ExtensionExecutor implements ApplicationContextAware {
 
     private <C> C getExtensionService(Class<C> target, Context context) {
         try {
-            Map<String, C> beansOfType = applicationContext.getBeansOfType(target);
-            for (C type : beansOfType.values()) {
-                Class<?> typeClass = ClassUtils.forName(type.getClass().getName(),type.getClass().getClassLoader());
-                applicationContext.getType(type.getClass().getName());
-                ExtensionService annotation = typeClass.getAnnotation(ExtensionService.class);
-                if (annotation != null && Objects.equals(annotation.bizCode(), context.getBizCode())) {
-                    return (C) applicationContext.getBean(typeClass);
+            Map<String, C> serviceBeans = applicationContext.getBeansOfType(target);
+            for (C service : serviceBeans.values()) {
+                ExtensionService annotation = service.getClass().getAnnotation(ExtensionService.class);
+                if (annotation != null) {
+                    String[] bizCodes = annotation.bizCode();
+                    for (int i = 0; i < bizCodes.length; i++) {
+                        if (Objects.equals(bizCodes[i], context.getBizCode())) {
+                            return service;
+                        }
+                    }
                 }
             }
-        } catch (BeansException | ClassNotFoundException ex) {
+        } catch (BeansException ex) {
             throw new ExtensionException(context.getBizCode(), ex);
         }
-        throw new ExtensionException(context.getBizCode(), "extensionService of "+target.getCanonicalName()+" could not be found");
+        throw new ExtensionException(context.getBizCode(), "extensionService of " + target.getCanonicalName() + " could not be found");
     }
 
     @Override

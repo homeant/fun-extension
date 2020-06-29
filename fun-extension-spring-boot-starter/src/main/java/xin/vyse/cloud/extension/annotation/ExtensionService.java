@@ -1,7 +1,5 @@
 package xin.vyse.cloud.extension.annotation;
 
-import org.springframework.core.annotation.AliasFor;
-import org.springframework.stereotype.Component;
 
 import java.lang.annotation.*;
 
@@ -12,18 +10,16 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ExtensionService {
-    @AliasFor("name")
     String value() default "";
 
-    @AliasFor("value")
-    String name() default "";
+    String name();
 
     /**
      * 业务key
      *
      * @return
      */
-    String bizCode();
+    String[] bizCode();
 
     String desc() default "";
 }
