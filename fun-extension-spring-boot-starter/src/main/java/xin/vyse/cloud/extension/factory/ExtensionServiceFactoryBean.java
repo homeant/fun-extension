@@ -5,11 +5,6 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import xin.vyse.cloud.extension.IExtensionPoint;
-import xin.vyse.cloud.extension.proxy.ExtensionSpringProxy;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 
 /**
  * 扩展点工厂
@@ -31,8 +26,7 @@ public class ExtensionServiceFactoryBean implements FactoryBean<IExtensionPoint>
 
     @Override
     public IExtensionPoint getObject() throws Exception {
-        return type.newInstance();
-        //return (IExtensionPoint) new ExtensionSpringProxy().getInstance(type);
+        return (IExtensionPoint) type.getDeclaredConstructors()[0].newInstance();
     }
 
     @Override
