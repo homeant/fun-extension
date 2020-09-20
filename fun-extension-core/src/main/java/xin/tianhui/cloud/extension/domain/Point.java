@@ -7,11 +7,12 @@ import java.util.List;
 
 @Data
 public class Point implements Serializable {
+
     private String className;
 
     private String name;
 
     private String desc;
 
-    private List<Service> serviceList;
+    private List<Extension> extensionList;
 }

@@ -1,7 +1,6 @@
 package xin.tianhui.cloud.extension.registrar;
 
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -25,9 +24,10 @@ import xin.tianhui.cloud.extension.annotation.EnableExtension;
 import xin.tianhui.cloud.extension.annotation.ExtensionPoint;
 import xin.tianhui.cloud.extension.annotation.ExtensionService;
 import xin.tianhui.cloud.extension.domain.Point;
-import xin.tianhui.cloud.extension.domain.Service;
+import xin.tianhui.cloud.extension.domain.Extension;
 import xin.tianhui.cloud.extension.repository.ExtensionRepository;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -38,12 +38,13 @@ import java.util.Set;
  * @author vyse.guaika
  */
 @Slf4j
-@Data
 public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
     private Environment environment;
 
     private ResourceLoader resourceLoader;
+
+    private ExtensionRepository repository = ExtensionRepository.INSTANCE();
 
 
     @Override
@@ -69,7 +70,7 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
                         if (serviceCandidateComponent instanceof AnnotatedBeanDefinition) {
                             AnnotationMetadata serviceAnnotationMetadata = ((AnnotatedBeanDefinition) serviceCandidateComponent).getMetadata();
                             Map<String, Object> serviceAttributes = serviceAnnotationMetadata.getAnnotationAttributes(ExtensionService.class.getCanonicalName());
-                            this.repositoryExtensionService(annotationMetadata,registry, serviceAnnotationMetadata, serviceAttributes);
+                            this.repositoryExtensionService(annotationMetadata, registry, serviceAnnotationMetadata, serviceAttributes);
                         }
                     }
                 }
@@ -84,16 +85,17 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
      * @param annotationMetadata
      * @param attributes
      */
-    private void repositoryExtensionService(AnnotationMetadata pointAnnotationMetadata,BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata, Map<String, Object> attributes) {
+    private void repositoryExtensionService(AnnotationMetadata pointAnnotationMetadata, BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata, Map<String, Object> attributes) {
         String className = annotationMetadata.getClassName();
         BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(className);
         String name = this.getName(attributes);
         String alias = this.getAlias(attributes, className);
-        Service service = new Service();
-        service.setBizCode(this.getBizCode(attributes));
-        service.setClassName(className);
-        service.setName(name);
-        ExtensionRepository.putService(pointAnnotationMetadata.getClassName(),service);
+        Extension extension = new Extension();
+        extension.setBizCode(this.getBizCode(attributes));
+        extension.setClassName(className);
+        extension.setName(name);
+        extension.setDesc(getDesc(attributes));
+        repository.getPointList().get(pointAnnotationMetadata.getClassName()).getExtensionList().add(extension);
         definition.setAutowireMode(2);
         AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
         BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, className, new String[]{alias});
@@ -102,6 +104,14 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
 
     private String getName(Map<String, Object> attributes) {
         return (String) attributes.get("name");
+    }
+
+    private String getValue(Map<String, Object> attributes) {
+        return (String) attributes.get("value");
+    }
+
+    private String getDesc(Map<String, Object> attributes) {
+        return (String) attributes.get("desc");
     }
 
     private String[] getBizCode(Map<String, Object> attributes) {
@@ -122,7 +132,7 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
     }
 
     /**
-     * 注册扩张点接口
+     * 注册扩展点接口
      *
      * @param registry
      * @param annotationMetadata
@@ -132,9 +142,10 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
         String className = annotationMetadata.getClassName();
         Point point = new Point();
         point.setClassName(className);
-        point.setName((String) attributes.get("name"));
-        point.setDesc((String) attributes.get("desc"));
-        ExtensionRepository.put(className,point);
+        point.setName(getValue(attributes));
+        point.setDesc(getDesc(attributes));
+        point.setExtensionList(new ArrayList<>());
+        repository.getPointList().put(className, point);
     }
 
 
@@ -177,5 +188,15 @@ public class ExtensionRegistrar implements ImportBeanDefinitionRegistrar, Resour
                 return isCandidate;
             }
         };
+    }
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
+
+    @Override
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
     }
 }

@@ -15,20 +15,21 @@ import xin.tianhui.cloud.test.extension.service.HelloService;
 import xin.tianhui.cloud.test.extension.service.TestBean;
 
 @Slf4j
-public class ServiceTest extends ApplicationTest {
+public class ExtensionTest extends ApplicationTest {
 
 
     @Autowired
     private ExtensionExecutor extensionExecutor;
 
+
     @Autowired
-    private TestBean testBean;
+    private ExtensionRepository repository;
 
     @Test
     public void test() {
         Context context = Context.create("xin.tianhui.cloud.hello");
-        String result = extensionExecutor.execute(HelloService.class, context, helloService -> helloService.hello("tom"));
+        String result = extensionExecutor.submit(HelloService.class, context, helloService -> helloService.hello("tom"));
         log.info("result:{}",result);
-        log.info("point:{}",ExtensionRepository.getPointList());
+        log.info("point:{}",repository.getPointList());
     }
 }

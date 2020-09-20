@@ -1,18 +1,15 @@
 package xin.tianhui.cloud.extension.repository;
 
-import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import xin.tianhui.cloud.extension.domain.Point;
-import xin.tianhui.cloud.extension.domain.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,32 +20,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @ToString
-@Data
 public class ExtensionRepository implements ApplicationContextAware, ApplicationListener<ContextRefreshedEvent> {
 
     private ApplicationContext applicationContext;
 
-    private static final Map<String, Point> pointList = new ConcurrentHashMap<>();
+    private Map<String, Point> POINT_LIST = new ConcurrentHashMap<>();
 
+    private static ExtensionRepository INSTANCE = new ExtensionRepository();
 
-    public synchronized static void put(String name, Point point) {
-        pointList.put(name, point);
+    public synchronized static ExtensionRepository INSTANCE() {
+        return INSTANCE;
     }
 
-    public synchronized static void putService(String name, Service service) {
-        if (pointList.containsKey(name)) {
-            Point point = pointList.get(name);
-            List<Service> serviceList = point.getServiceList();
-            if (serviceList == null) {
-                point.setServiceList(new ArrayList<>());
-                serviceList = point.getServiceList();
-            }
-            serviceList.add(service);
-        }
-    }
-
-    public static Map<String, Point> getPointList() {
-        return pointList;
+    public Map<String, Point> getPointList() {
+        return POINT_LIST;
     }
 
     @PostConstruct
@@ -60,5 +45,10 @@ public class ExtensionRepository implements ApplicationContextAware, Application
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         ApplicationContext applicationContext = contextRefreshedEvent.getApplicationContext();
         log.info("event:{}", contextRefreshedEvent);
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

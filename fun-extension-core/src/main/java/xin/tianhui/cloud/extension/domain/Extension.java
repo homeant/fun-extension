@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class Service implements Serializable {
+public class Extension implements Serializable {
     private String className;
 
     private String name;
