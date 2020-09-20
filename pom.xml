@@ -6,7 +6,7 @@
 
     <groupId>xin.tianhui.cloud</groupId>
     <artifactId>fun-extension</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0.RELEASE</version>
     <modules>
         <module>fun-extension-spring-boot-starter</module>
         <module>fun-extension-core</module>
@@ -37,7 +37,7 @@
             <dependency>
                 <groupId>xin.tianhui.cloud</groupId>
                 <artifactId>fun-extension-dependencies</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>1.0.0.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
